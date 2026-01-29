@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html class="light" lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ระบบจัดการหลังบ้าน (Admin) - Porninshop</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="assets/js/tailwind-config.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-neutral-900 text-primary dark:text-white font-display min-h-screen flex flex-col antialiased">
+    <!-- Header -->
+    <header
+        class="sticky top-0 z-50 w-full bg-white dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a class="flex items-center gap-3 hover:opacity-80 transition-opacity" href="index.html">
+                    <div class="flex items-center justify-center w-8 h-8 bg-primary rounded text-white">
+                        <span class="material-symbols-outlined text-xl">restaurant</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1
+                            class="text-lg font-black tracking-tighter uppercase text-gray-800 dark:text-white leading-none">
+                            Porninshop Admin</h1>
+                        <span class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Management
+                            System</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center gap-4" id="auth-buttons">
+                    <!-- Auth UI will be injected here -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-1 rounded-xl bg-gray-100 dark:bg-neutral-800 p-1 mb-8" role="tablist">
+            <button id="tab-members" onclick="switchTab('members')"
+                class="w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-gray-700 dark:text-gray-200 hover:bg-white/[0.12] hover:text-primary dark:hover:text-white selected-tab bg-white dark:bg-neutral-700 shadow text-primary dark:text-white transition-all">
+                จัดการสมาชิก (Members)
+            </button>
+            <button id="tab-products" onclick="switchTab('products')"
+                class="w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-gray-700 dark:text-gray-200 hover:bg-white/[0.12] hover:text-primary dark:hover:text-white transition-all">
+                จัดการสินค้า (Products)
+            </button>
+            <button id="tab-orders" onclick="switchTab('orders')"
+                class="w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-gray-700 dark:text-gray-200 hover:bg-white/[0.12] hover:text-primary dark:hover:text-white transition-all">
+                จัดการคำสั่งซื้อ (Orders)
+            </button>
+        </div>
+
+        <!-- Section: Members (Default) -->
+        <div id="section-members" class="animate-fade-in">
+            <!-- Stats for Members -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div
+                    class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 flex items-center justify-between relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <p class="text-sm font-medium text-gray-500 mb-1">สมาชิกทั้งหมด</p>
+                        <h3 class="text-3xl font-black text-gray-800 dark:text-white" id="total-members">0</h3>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">group</span>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">ผู้ดูแลระบบ</p>
+                        <h3 class="text-3xl font-black text-gray-800 dark:text-white" id="total-admins">0</h3>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">security</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members Table -->
+            <div
+                class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 overflow-hidden">
+                <div
+                    class="p-6 border-b border-gray-100 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-white">รายชื่อสมาชิก</h2>
+                        <p class="text-sm text-gray-500">จัดการข้อมูลสมาชิกในระบบ</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.location.reload()"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+                            <span class="material-symbols-outlined text-lg">refresh</span>
+                            รีเฟรช
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="bg-gray-50 dark:bg-neutral-700/50 border-b border-gray-100 dark:border-neutral-700">
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ชื่อผู้ใช้</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ชื่อ-นามสกุล
+                                </th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ติดต่อ</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">สถานะ</th>
+                                <th class="p-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-gray-100 dark:divide-neutral-700">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="users-empty-state" class="hidden p-12 text-center text-gray-500">ไม่พบข้อมูล</div>
+            </div>
+        </div>
+
+        <!-- Section: Products -->
+        <div id="section-products" class="hidden animate-fade-in">
+            <!-- Stats for Products -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div
+                    class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">สินค้าทั้งหมด</p>
+                        <h3 class="text-3xl font-black text-gray-800 dark:text-white" id="total-products">0</h3>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">inventory_2</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="restoreData()"
+                        class="flex p-6 items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl shadow-lg border border-transparent transition-transform active:scale-95">
+                        <span class="material-symbols-outlined text-3xl">restore</span>
+                        <span class="text-xl font-bold">กู้คืนสินค้า</span>
+                    </button>
+                    <button onclick="openProductModal()"
+                        class="bg-primary hover:bg-primary-hover text-white p-6 rounded-2xl shadow-lg border border-transparent flex items-center justify-center gap-3 transition-transform active:scale-95">
+                        <span class="material-symbols-outlined text-3xl">add_circle</span>
+                        <span class="text-xl font-bold">เพิ่มสินค้าใหม่</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div
+                class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 overflow-hidden">
+                <div
+                    class="p-6 border-b border-gray-100 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-white">รายการสินค้า</h2>
+                        <p class="text-sm text-gray-500">จัดการข้อมูลสินค้าหน้าบ้าน</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="bg-gray-50 dark:bg-neutral-700/50 border-b border-gray-100 dark:border-neutral-700">
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">รูปภาพ</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ชื่อสินค้า</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">หมวดหมู่</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ราคา</th>
+                                <th class="p-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body" class="divide-y divide-gray-100 dark:divide-neutral-700">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="products-empty-state"
+                    class="hidden py-12 flex flex-col items-center justify-center text-center">
+                    <div class="p-4 bg-gray-50 dark:bg-[#333] rounded-full mb-3">
+                        <span class="material-symbols-outlined text-gray-400 text-3xl">inventory_2</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">ยังไม่มีสินค้า</h3>
+                    <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">เริ่มเพิ่มสินค้าชิ้นแรก หรือ</p>
+                    <button onclick="restoreData()"
+                        class="text-primary font-bold hover:underline">กู้คืนสินค้าตัวอย่าง?</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Orders -->
+        <div id="section-orders" class="hidden animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div
+                    class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">คำสั่งซื้อทั้งหมด</p>
+                        <h3 class="text-3xl font-black text-gray-800 dark:text-white" id="total-orders">0</h3>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">orders</span>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 overflow-hidden">
+                <div
+                    class="p-6 border-b border-gray-100 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-white">รายการคำสั่งซื้อ</h2>
+                        <p class="text-sm text-gray-500">จัดการสถานะคำสั่งซื้อของลูกค้า</p>
+                    </div>
+                    <button onclick="window.location.reload()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">refresh</span> รีเฟรช
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="bg-gray-50 dark:bg-neutral-700/50 border-b border-gray-100 dark:border-neutral-700">
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    เลขที่คำสั่งซื้อ</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ลูกค้า</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">สินค้า</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ยอดรวม</th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">การชำระเงิน
+                                </th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">สถานะ</th>
+                                <th class="p-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="divide-y divide-gray-100 dark:divide-neutral-700">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="orders-empty-state" class="hidden p-12 text-center text-gray-500">ไม่พบคำสั่งซื้อ</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeProductModal()">
+        </div>
+        <div
+            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-neutral-800 p-6 md:p-8 transform transition-all scale-100">
+            <h3 class="text-2xl font-black mb-6 flex items-center gap-2" id="modal-title">
+                <span class="material-symbols-outlined text-primary">add_circle</span> เพิ่มสินค้าใหม่
+            </h3>
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" id="p_id">
+
+                <div>
+                    <label class="block text-sm font-bold mb-1">ชื่อสินค้า</label>
+                    <input required id="p_name" type="text"
+                        class="w-full rounded-lg border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 focus:ring-primary focus:border-primary px-4 py-2"
+                        placeholder="เช่น ตำไทยไข่เค็ม">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">หมวดหมู่</label>
+                        <select id="p_category"
+                            class="w-full rounded-lg border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 focus:ring-primary focus:border-primary px-4 py-2">
+                            <option value="somtum">ส้มตำ (Som Tum)</option>
+                            <option value="side">ของทานเล่น (Side Dishes)</option>
+                            <option value="drink">เครื่องดื่ม (Drinks)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">ราคา (บาท)</label>
+                        <input required id="p_price" type="number"
+                            class="w-full rounded-lg border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 focus:ring-primary focus:border-primary px-4 py-2"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold mb-1">ลิงก์รูปภาพ</label>
+                    <input required id="p_image" type="url"
+                        class="w-full rounded-lg border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 focus:ring-primary focus:border-primary px-4 py-2"
+                        placeholder="https://example.com/image.jpg">
+                    <p class="text-xs text-gray-500 mt-1">*แนะนำให้ใช้ลิงก์รูปภาพที่โฮสต์ไว้แล้ว</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold mb-1">รายละเอียดสินค้า</label>
+                    <textarea required id="p_desc" rows="3"
+                        class="w-full rounded-lg border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 focus:ring-primary focus:border-primary px-4 py-2"
+                        placeholder="รายละเอียด..."></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeProductModal()"
+                        class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">ยกเลิก</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl transition-colors shadow-lg shadow-primary/30">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import './assets/js/data-manager.js';
+
+        // Make functions available globally for onclick handlers
+        window.switchTab = switchTab;
+        window.deleteUser = deleteUser;
+        window.openProductModal = openProductModal;
+        window.closeProductModal = closeProductModal;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.updateOrderStatus = updateOrderStatus;
+        window.restoreData = async function () {
+            if (confirm('ต้องการกู้คืนข้อมูลสินค้าตัวอย่างทั้งหมดหรือไม่?')) {
+                await dataManager.products.restoreDefaults();
+                window.location.reload();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAccess();
+
+            // Initial Render
+            renderUsersTable();
+            renderProductsTable();
+            renderOrdersTable();
+
+            // Listen for storage changes to auto-update
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'users_db') renderUsersTable();
+                if (e.key === 'products_db') renderProductsTable();
+                if (e.key === 'orders_db') renderOrdersTable();
+            });
+        });
+
+        // Tabs Logic
+        function switchTab(tab) {
+            document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => {
+                el.classList.remove('bg-white', 'dark:bg-neutral-700', 'shadow', 'text-primary', 'dark:text-white');
+                el.classList.add('text-gray-700', 'dark:text-gray-200');
+            });
+
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            const btn = document.getElementById(`tab-${tab}`);
+            btn.classList.add('bg-white', 'dark:bg-neutral-700', 'shadow', 'text-primary', 'dark:text-white');
+        }
+
+        function checkAdminAccess() {
+            const user = dataManager.auth.getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                alert('⛔️ คุณไม่มีสิทธิ์เข้าถึงหน้านี้ (Admin Only)');
+                window.location.href = 'index.html';
+                return;
+            }
+        }
+
+        // --- Members Logic ---
+        function renderUsersTable() {
+            // Access raw for list - system level access
+            const users = dataManager.auth.getCurrentUser() ? JSON.parse(localStorage.getItem('users_db') || '[]') : [];
+            const allUsers = JSON.parse(localStorage.getItem('users_db')) || [];
+
+            const tbody = document.getElementById('users-table-body');
+            const emptyState = document.getElementById('users-empty-state');
+
+            document.getElementById('total-members').textContent = allUsers.filter(u => u.role === 'member').length;
+            document.getElementById('total-admins').textContent = allUsers.filter(u => u.role === 'admin').length;
+
+            tbody.innerHTML = '';
+            if (allUsers.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            allUsers.forEach(user => {
+                const isAdmin = user.role === 'admin';
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors border-b border-gray-50 dark:border-neutral-800 last:border-0';
+                tr.innerHTML = `
+    <td class="p-4 flex items-center gap-3">
+        <div
+            class="w-8 h-8 rounded-full ${isAdmin ? 'bg-red-100 text-red-600' : 'bg-primary/10 text-primary'} flex items-center justify-center font-bold text-sm">
+            ${user.username.charAt(0).toUpperCase()}
+        </div>
+        <span class="font-bold text-sm text-gray-900 dark:text-gray-200">${user.username}</span>
+    </td>
+    <td class="p-4 text-sm text-gray-600">
+        ${user.username} ${user.surname}
+    </td>
+    <td class="p-4 text-xs text-gray-500">
+        <div>${user.email || '-'}</div>
+        <div>${user.phone || '-'}</div>
+    </td>
+    <td class="p-4">
+        <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isAdmin ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+            ${isAdmin ? 'Admin' : 'Member'}
+        </span>
+    </td>
+    <td class="p-4 text-right">
+        ${!isAdmin ? `
+        <button onclick="deleteUser('${user.id}')"
+            class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="ลบ">
+            <span class="material-symbols-outlined text-lg">delete</span>
+        </button>
+        ` : ''}
+    </td>
+    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteUser(id) {
+            // Not exposed in dataManager yet, but let's just alert
+            alert('ฟีเจอร์ลบสมาชิกยังไม่เปิดใช้งาน');
+        }
+
+        // --- Products Logic ---
+        function renderProductsTable() {
+            const products = dataManager.products.getAll();
+            const tbody = document.getElementById('products-table-body');
+            const emptyState = document.getElementById('products-empty-state');
+
+            document.getElementById('total-products').textContent = products.length;
+
+            tbody.innerHTML = '';
+            if (products.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors border-b border-gray-50 dark:border-neutral-800 last:border-0';
+                tr.innerHTML = `
+    <td class="p-4"><img src="${p.image}"
+            class="w-12 h-12 object-contain bg-white rounded-lg border border-gray-100 p-1"></td>
+    <td class="p-4 font-bold text-gray-900 dark:text-white text-sm">${p.name}</td>
+    <td class="p-4 text-xs text-gray-500 uppercase">${p.category}</td>
+    <td class="p-4 text-sm font-bold text-primary">฿${p.price.toLocaleString()}</td>
+    <td class="p-4 text-right">
+        <div class="flex items-center justify-end gap-2">
+            <button onclick='editProduct(${JSON.stringify(p)})'
+                class="text-gray-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors">
+                <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
+            <button onclick="deleteProduct('${p.id}')"
+                class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
+        </div>
+    </td>
+    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('ยืนยันการลบสินค้า?')) {
+                await dataManager.products.delete(id);
+                renderProductsTable();
+            }
+        }
+
+        // --- Orders Logic ---
+        function renderOrdersTable() {
+            const orders = dataManager.orders.getAll();
+            const tbody = document.getElementById('orders-table-body');
+            const emptyState = document.getElementById('orders-empty-state');
+
+            document.getElementById('total-orders').textContent = orders.length;
+
+            tbody.innerHTML = '';
+            if (orders.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            orders.forEach(order => {
+                const statusColors = {
+                    'รอตรวจสอบ': 'bg-yellow-100 text-yellow-800',
+                    'จัดส่งสำเร็จ': 'bg-green-100 text-green-800',
+                    'ยกเลิกแล้ว': 'bg-red-100 text-red-800'
+                };
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors border-b border-gray-50 dark:border-neutral-800 last:border-0';
+
+                // Items Summary
+                const itemsSummary = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
+
+                const date = new Date(order.date).toLocaleDateString('th-TH');
+
+                tr.innerHTML = `
+    <td class="p-4 text-sm font-mono font-bold text-primary">#${order.id}</td>
+    <td class="p-4">
+        <div class="text-sm font-bold text-gray-900 dark:text-gray-200">${order.user}</div>
+        <div class="text-xs text-gray-500">${order.customerPhone || ''}</div>
+    </td>
+    <td class="p-4 text-xs text-gray-500 max-w-xs truncate" title="${itemsSummary}">${itemsSummary}</td>
+    <td class="p-4 text-sm font-bold">฿${order.total.toLocaleString()}</td>
+    <td class="p-4 text-xs text-gray-500">${order.paymentMethod}</td>
+    <td class="p-4">
+        <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status] || 'bg-gray-100 text-gray-800'}">
+            ${order.status}
+        </span>
+    </td>
+    <td class="p-4 text-right">
+        <select onchange="updateOrderStatus('${order.id}', this.value)" class="text-xs border-gray-200 rounded-lg p-1">
+            <option value="รอตรวจสอบ" ${order.status === 'รอตรวจสอบ' ? 'selected' : ''}>รอตรวจสอบ</option>
+            <option value="จัดส่งสำเร็จ" ${order.status === 'จัดส่งสำเร็จ' ? 'selected' : ''}>จัดส่งสำเร็จ</option>
+            <option value="ยกเลิกแล้ว" ${order.status === 'ยกเลิกแล้ว' ? 'selected' : ''}>ยกเลิก</option>
+        </select>
+    </td>
+    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateOrderStatus(id, status) {
+            await dataManager.orders.updateStatus(id, status);
+            renderOrdersTable();
+        }
+
+        // --- Product Modal ---
+        function openProductModal(product = null) {
+            // ... (Same as before)
+            const modal = document.getElementById('product-modal');
+            const title = document.getElementById('modal-title');
+            modal.classList.remove('hidden');
+
+            if (product) {
+                title.innerHTML = '<span class="material-symbols-outlined text-primary">edit</span> แก้ไขสินค้า';
+                document.getElementById('p_id').value = product.id;
+                document.getElementById('p_name').value = product.name;
+                document.getElementById('p_category').value = product.category;
+                document.getElementById('p_price').value = product.price;
+                document.getElementById('p_image').value = product.image;
+                document.getElementById('p_desc').value = product.desc;
+            } else {
+                title.innerHTML = '<span class="material-symbols-outlined text-primary">add_circle</span> เพิ่มสินค้าใหม่';
+                document.getElementById('product-form').reset();
+                document.getElementById('p_id').value = '';
+            }
+        }
+        // ... (Close and Edit functions are same)
+
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function editProduct(product) {
+            openProductModal(product);
+        }
+
+        document.getElementById('product-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const product = {
+                name: document.getElementById('p_name').value,
+                category: document.getElementById('p_category').value,
+                price: parseInt(document.getElementById('p_price').value),
+                image: document.getElementById('p_image').value,
+                desc: document.getElementById('p_desc').value
+            };
+
+            const id = document.getElementById('p_id').value;
+            if (id) product.id = id;
+
+            await dataManager.products.save(product);
+            renderProductsTable(); // Explicit reload
+            closeProductModal();
+        });
+        // renderProductsTable(); // Listener will update it
+        ;
+    </script>
+</body>
+
+</html>

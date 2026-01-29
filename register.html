@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html class="light" lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>สมัครสมาชิก - Porninshop</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="assets/js/tailwind-config.js"></script>
+
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-primary dark:text-white font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+    <header
+        class="sticky top-0 z-50 w-full bg-surface-light dark:bg-surface-dark border-b border-[#e0e0e0] dark:border-neutral-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a class="flex items-center gap-3 hover:opacity-80 transition-opacity" href="index.html">
+                    <div class="flex items-center justify-center w-8 h-8 bg-primary rounded text-white">
+                        <span class="material-symbols-outlined text-xl">restaurant</span>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tighter uppercase text-primary dark:text-white">porninshop
+                    </h1>
+                </a>
+                <div class="flex items-center gap-4">
+                    <a class="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        href="login.html">
+                        <span>เข้าสู่ระบบ</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="w-full max-w-lg">
+            <div
+                class="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 flex-grow">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <span class="material-symbols-outlined text-primary dark:text-white">person_add</span>
+                    </div>
+                    <h2 class="text-2xl font-black tracking-tight">สมัครสมาชิกใหม่</h2>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 mb-8 text-center">สร้างบัญชีเพื่อสะสมแต้มและรับสิทธิพิเศษ</p>
+
+                <form class="space-y-5" id="registerForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <label class="block">
+                            <span class="text-sm font-bold mb-1.5 block">ชื่อ (Username)</span>
+                            <input required id="reg_username"
+                                class="w-full px-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+                                placeholder="ระบุชื่อจริง" type="text" />
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-bold mb-1.5 block">นามสกุล</span>
+                            <input required id="reg_surname"
+                                class="w-full px-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+                                placeholder="ระบุนามสกุล" type="text" />
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-sm font-bold mb-1.5 block">อีเมล</span>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">mail</span>
+                            <input required
+                                class="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+                                placeholder="example@email.com" type="email" />
+                        </div>
+                    </label>
+                    <label class="block">
+                        <span class="text-sm font-bold mb-1.5 block">เบอร์โทรศัพท์</span>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">phone_iphone</span>
+                            <input required
+                                class="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+                                placeholder="08x-xxx-xxxx" type="tel" />
+                        </div>
+                    </label>
+                    <label class="block">
+                        <span class="text-sm font-bold mb-1.5 block">รหัสผ่าน</span>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">lock</span>
+                            <input required id="reg_password"
+                                class="w-full pl-10 pr-12 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+                                placeholder="กำหนดรหัสผ่าน (8+ ตัวอักษร)" type="password" />
+                            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                type="button" id="toggleRegPasswordBtn">
+                                <span class="material-symbols-outlined text-lg" id="regEyeIcon">visibility</span>
+                            </button>
+                        </div>
+                    </label>
+                    <div class="pt-2">
+                        <label class="flex items-start gap-3 cursor-pointer group">
+                            <input required class="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                type="checkbox" />
+                            <span
+                                class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">
+                                ฉันยอมรับ <a class="font-bold underline decoration-1 underline-offset-2"
+                                    href="#">เงื่อนไขการใช้งาน</a>
+                            </span>
+                        </label>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-primary text-white font-bold py-3.5 px-4 rounded-lg hover:bg-primary-hover transition-all transform active:scale-[0.98]">
+                        สมัครสมาชิก
+                    </button>
+                </form>
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-500">มีบัญชีอยู่แล้ว? <a href="login.html"
+                            class="font-bold text-primary hover:underline">เข้าสู่ระบบที่นี่</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer
+        class="py-6 border-t border-[#e0e0e0] dark:border-neutral-800 bg-surface-light dark:bg-surface-dark mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">© 2026 Porninshop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import './assets/js/data-manager.js';
+
+        // Toggle Password Logic for Register
+        document.getElementById('toggleRegPasswordBtn').addEventListener('click', function () {
+            const input = document.getElementById('reg_password');
+            const btn = this;
+            if (input.type === "password") {
+                input.type = "text";
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">visibility_off</span>';
+            } else {
+                input.type = "password";
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">visibility</span>';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Collect form data
+            const username = document.getElementById('reg_username').value;
+            const surname = document.getElementById('reg_surname').value;
+            const password = document.getElementById('reg_password').value;
+            const email = this.querySelector('input[type="email"]').value;
+            const phone = this.querySelector('input[type="tel"]').value;
+
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = 'กำลังบันทึกข้อมูล...';
+            btn.disabled = true;
+
+            try {
+                const userData = {
+                    username,
+                    surname,
+                    email,
+                    phone,
+                    password
+                };
+
+                // Call the new auth system directly
+                await dataManager.auth.register(userData);
+
+                alert('🎉 สมัครสมาชิกเรียบร้อยแล้ว!\nโปรดใช้ ชื่อ, นามสกุล และรหัสผ่าน เพื่อเข้าสู่ระบบ');
+                // Could call login logic automatically here, but redirect is safer
+                window.location.href = 'login.html';
+
+            } catch (error) {
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

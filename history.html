@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="light" lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ประวัติการสั่งซื้อ - Porninshop</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&family=Noto+Sans+Thai:wght@300;400;500;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="assets/js/tailwind-config.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+</head>
+
+<body class="bg-[#f9fafb] text-primary font-display min-h-screen">
+
+    <header class="bg-white border-b px-6 py-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="flex items-center text-gray-500 hover:text-primary">
+                    <span class="material-symbols-outlined">arrow_back</span> หน้าหลัก
+                </a>
+                <h1 class="text-xl font-bold">ประวัติการสั่งซื้อ</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">account_circle</span>
+                <span id="user-display" class="font-bold text-sm">User</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div id="history-container" class="space-y-6">
+            <div class="text-center py-12">
+                <p class="text-gray-500">กำลังโหลดข้อมูล...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import './assets/js/data-manager.js';
+
+        // Attach cancelOrder to window
+        window.cancelOrder = cancelOrder;
+
+        // ฟังก์ชันสำหรับกดยกเลิกสินค้า
+        async function cancelOrder(orderId) {
+            if (!confirm('คุณต้องการยกเลิกคำสั่งซื้อนี้ใช่หรือไม่?')) return;
+
+            await dataManager.orders.updateStatus(orderId, 'ยกเลิกแล้ว');
+            location.reload();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ตรวจสอบการล็อกอิน
+            const currentUser = dataManager.auth.getCurrentUser();
+
+            if (!currentUser) {
+                alert('กรุณาเข้าสู่ระบบเพื่อดูประวัติ');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('user-display').innerText = currentUser.username;
+
+            // ดึงข้อมูลและกรองเฉพาะของ User คนนี้
+            const myOrders = dataManager.orders.getByUser(currentUser.username);
+
+            const container = document.getElementById('history-container');
+
+            // ถ้าไม่มีประวัติการสั่งซื้อ
+            if (myOrders.length === 0) {
+                container.innerHTML = `
+                <div class="text-center py-12 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
+                    <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">remove_shopping_cart</span>
+                    <p class="text-gray-500">คุณยังไม่มีประวัติการสั่งซื้อ</p>
+                    <a href="products.html" class="inline-block mt-4 text-primary font-bold hover:underline">ไปช้อปปิ้งกันเถอะ!</a>
+                </div>
+            `;
+                return;
+            }
+
+            // วนลูปแสดงรายการสินค้า
+            container.innerHTML = myOrders.map(order => {
+                // กำหนดสีและปุ่มตามสถานะ
+                let statusBadgeClass = 'bg-yellow-100 text-yellow-800';
+                let actionButton = '';
+                let itemOpacity = '';
+
+                if (order.status === 'ยกเลิกแล้ว') {
+                    statusBadgeClass = 'bg-red-100 text-red-800'; // สีแดงเมื่อยกเลิก
+                    itemOpacity = 'opacity-50 grayscale'; // ทำให้สินค้าดูจางลง
+                } else if (order.status === 'จัดส่งสำเร็จ') {
+                    statusBadgeClass = 'bg-green-100 text-green-800';
+                } else {
+                    // ถ้าสถานะปกติ (รอตรวจสอบ) ให้โชว์ปุ่มยกเลิก
+                    actionButton = `
+                    <button onclick="cancelOrder('${order.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold underline ml-3">
+                        [กดยกเลิกสินค้า]
+                    </button>
+                `;
+                }
+
+                // Format Date for display
+                const orderDate = new Date(order.date).toLocaleString('th-TH');
+
+                return `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+                <div class="bg-gray-50 px-6 py-4 border-b flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">หมายเลขคำสั่งซื้อ</p>
+                        <p class="font-mono font-bold text-primary">#${order.id}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">วันที่</p>
+                        <p class="text-sm">${orderDate}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">สถานะ</p>
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadgeClass}">
+                                ${order.status}
+                            </span>
+                            ${actionButton}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4 ${itemOpacity}">
+                    ${order.items.map(item => `
+                        <div class="flex items-center gap-4">
+                            <img src="${item.image}" class="w-16 h-16 bg-gray-100 rounded-md object-contain mix-blend-multiply">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-primary line-clamp-1">${item.name}</h4>
+                                <p class="text-xs text-gray-500">จำนวน: ${item.quantity} ชิ้น</p>
+                            </div>
+                            <p class="font-bold text-sm">฿${(item.price * item.quantity).toLocaleString()}</p>
+                        </div>
+                    `).join('')}
+                    <div class="pt-4 mt-4 border-t flex justify-between items-center">
+                        <span class="text-sm font-bold text-gray-500">ราคารวมทั้งสิ้น</span>
+                        <span class="text-lg font-black text-primary">฿${order.total.toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+            `;
+            }).join('');
+        });
+    </script>
+
+</body>
+
+</html>
